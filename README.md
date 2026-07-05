@@ -2,6 +2,14 @@
 
 A React Native / Expo mobile app that uses Claude's vision API to analyze meals from photos, track nutrition, and provide personalized health coaching.
 
+## Screenshots
+
+<!-- TODO: 3–4 phone screenshots side by side (camera/analysis screen, dashboard, AI coach chat) -->
+
+## Demo
+
+<!-- TODO: 30–60s screen recording (GIF or linked MP4) of the photo → analysis flow -->
+
 ## Features
 
 - **AI meal analysis** — snap a photo of your food and get instant calorie, macro, and health score breakdowns powered by Claude Sonnet
@@ -75,3 +83,11 @@ The system prompt is cached with `cache_control: { type: "ephemeral" }` to reduc
 - Run `npx tsc --noEmit` after every change — there is no lint or test script
 - `react-native-reanimated` is **not** installed; all animations use the built-in `Animated` API with `useNativeDriver: true`
 - New `UserPreferences` fields can be added to `DEFAULT_PREFS` in `src/services/storage.ts` with no migration needed — reads shallow-merge with defaults
+
+## Production Notes
+
+`EXPO_PUBLIC_ANTHROPIC_API_KEY` embeds the key in the client bundle — acceptable for a personal demo, not for distribution. The production path is proxying Claude calls through a small authenticated backend so the key never ships to devices; this is the top item on the roadmap.
+
+## License
+
+MIT — see [LICENSE](LICENSE).
