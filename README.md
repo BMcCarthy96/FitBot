@@ -4,11 +4,13 @@ A React Native / Expo mobile app that uses Claude's vision API to analyze meals 
 
 ## Screenshots
 
-<!-- TODO: 3–4 phone screenshots side by side (camera/analysis screen, dashboard, AI coach chat) -->
+![FitBot screens](docs/screenshots/composite.jpg)
 
 ## Demo
 
-<!-- TODO: 30–60s screen recording (GIF or linked MP4) of the photo → analysis flow -->
+![App walkthrough](docs/demo.gif)
+
+Onboarding, home dashboard, and progress screens running on Expo Web. The photo-to-analysis flow itself needs a device camera and a live Claude API key, so this walkthrough shows the surrounding product: goal setup, daily tracking, meal history, macro rings, weight trend, the nutrition coach, and theming.
 
 ## Features
 
@@ -87,6 +89,10 @@ The system prompt is cached with `cache_control: { type: "ephemeral" }` to reduc
 ## Production Notes
 
 `EXPO_PUBLIC_ANTHROPIC_API_KEY` embeds the key in the client bundle. That's acceptable for a personal demo, not for distribution. The production path is proxying Claude calls through a small authenticated backend so the key never ships to devices; this is the top item on the roadmap.
+
+## Known Issues
+
+- On Expo Web, switching bottom tabs can briefly render the previous screen's content behind the new one before the old screen unmounts (visible on `Coach` and `Settings`). Not observed on native; likely a screen-container background/z-index gap in the web renderer that needs `overflow: hidden` or an explicit background color per tab screen.
 
 ## License
 
