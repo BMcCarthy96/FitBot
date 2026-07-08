@@ -14,19 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { C, F } from "../theme";
 import { chat, Message } from "../services/claude";
-
-const COACH_SYSTEM_PROMPT = `You are FitBot's Nutrition Coach, an evidence-based wellness advisor. Your guidance is grounded in peer-reviewed nutritional science, free from food industry bias or pharmaceutical influence.
-
-You help users:
-• Understand how macronutrients (protein, carbs, fat) and micronutrients affect their goals
-• Build sustainable eating habits, not crash diets or fads
-• Interpret their daily tracking data and make meaningful improvements
-• Debunk popular nutrition myths with actual science
-• Navigate dietary choices that fit their lifestyle, culture, and budget
-
-Tone: Warm, encouraging, and science-forward. Like a knowledgeable friend who happens to be a registered dietitian.
-
-Always recommend consulting a healthcare professional for medical conditions. Keep responses concise and actionable, aim for 2-4 paragraphs max.`;
+import { COACH_SYSTEM_PROMPT } from "../services/coachPrompt";
 
 const WELCOME: Message = {
   role: "assistant",
@@ -56,10 +44,10 @@ export default function ChatScreen() {
       const assistantMsg: Message = { role: "assistant", content: reply };
       apiHistory.current = [...apiHistory.current, assistantMsg];
       setDisplayMessages((prev) => [...prev, assistantMsg]);
-    } catch {
+    } catch (e) {
       const errorMsg: Message = {
         role: "assistant",
-        content: "Sorry, something went wrong. Please try again.",
+        content: e instanceof Error ? e.message : "Sorry, something went wrong. Please try again.",
       };
       setDisplayMessages((prev) => [...prev, errorMsg]);
     } finally {

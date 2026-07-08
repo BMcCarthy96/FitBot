@@ -1,15 +1,18 @@
+import { Platform } from "react-native";
 import * as Notifications from "expo-notifications";
 import { MealReminderTimes } from "../types";
 
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+if (Platform.OS !== "web") {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 const MEAL_INFO: Record<keyof MealReminderTimes, { title: string; body: string }> = {
   breakfast: { title: "Good morning! 🌅", body: "Have you tracked your breakfast yet?" },
@@ -26,11 +29,13 @@ const DEFAULT_TIMES: MealReminderTimes = {
 };
 
 export async function requestPermissions(): Promise<boolean> {
+  if (Platform.OS === "web") return false;
   const { status } = await Notifications.requestPermissionsAsync();
   return status === "granted";
 }
 
 export async function scheduleNotifications(times: MealReminderTimes = DEFAULT_TIMES): Promise<void> {
+  if (Platform.OS === "web") return;
   await cancelAllNotifications();
   const granted = await requestPermissions();
   if (!granted) return;
@@ -47,10 +52,12 @@ export async function scheduleNotifications(times: MealReminderTimes = DEFAULT_T
 }
 
 export async function cancelAllNotifications(): Promise<void> {
+  if (Platform.OS === "web") return;
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
 
 export async function sendStreakNotification(streakDays: number): Promise<void> {
+  if (Platform.OS === "web") return;
   await Notifications.scheduleNotificationAsync({
     content: {
       title: `🔥 ${streakDays}-day streak!`,
@@ -66,6 +73,7 @@ export async function sendStreakNotification(streakDays: number): Promise<void> 
 }
 
 export async function sendTestNotification(): Promise<void> {
+  if (Platform.OS === "web") return;
   const granted = await requestPermissions();
   if (!granted) return;
   await Notifications.scheduleNotificationAsync({

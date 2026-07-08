@@ -10,6 +10,7 @@ import {
 import * as SplashScreen from "expo-splash-screen";
 import AppNavigator from "./src/navigation";
 import { ThemeProvider } from "./src/services/themeContext";
+import PhoneFrame from "./src/components/PhoneFrame";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -28,10 +29,12 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   return (
-    <ThemeProvider>
-      <SafeAreaProvider onLayout={onLayout}>
-        <AppNavigator />
-      </SafeAreaProvider>
-    </ThemeProvider>
+    <PhoneFrame>
+      <ThemeProvider>
+        <SafeAreaProvider onLayout={onLayout}>
+          <AppNavigator />
+        </SafeAreaProvider>
+      </ThemeProvider>
+    </PhoneFrame>
   );
 }

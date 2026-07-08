@@ -659,7 +659,7 @@ export default function OnboardingScreen() {
   }
 
   if (showLogin) {
-    const socialButtons = (
+    const socialButtons = Platform.OS === "web" ? null : (
       <>
         <View style={lg.dividerRow}>
           <View style={lg.dividerLine} />

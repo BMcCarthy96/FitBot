@@ -13,9 +13,11 @@ import {
   Animated,
   Easing,
   Dimensions,
+  Platform,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system/legacy";
+import * as ImageManipulator from "expo-image-manipulator";
 import Svg, { Path, Circle, Defs, LinearGradient, Stop } from "react-native-svg";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
@@ -839,9 +841,18 @@ export default function SettingsScreen() {
     });
     if (!result.canceled && result.assets[0]) {
       const src = result.assets[0].uri;
-      const dest = `${FileSystem.documentDirectory ?? ""}profile_picture.jpg`;
-      await FileSystem.copyAsync({ from: src, to: dest });
-      update({ profilePicture: dest });
+      if (Platform.OS === "web") {
+        const resized = await ImageManipulator.manipulateAsync(
+          src,
+          [{ resize: { width: 256 } }],
+          { compress: 0.7, format: ImageManipulator.SaveFormat.JPEG, base64: true },
+        );
+        update({ profilePicture: `data:image/jpeg;base64,${resized.base64}` });
+      } else {
+        const dest = `${FileSystem.documentDirectory ?? ""}profile_picture.jpg`;
+        await FileSystem.copyAsync({ from: src, to: dest });
+        update({ profilePicture: dest });
+      }
     }
   }
 
@@ -1236,32 +1247,34 @@ export default function SettingsScreen() {
         </View>
 
         {/* Notifications */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Meal Reminders</Text>
-          <View style={styles.card}>
-            <View style={styles.toggleRow}>
-              <View>
-                <Text style={styles.toggleLabel}>Enable Reminders</Text>
-                <Text style={styles.toggleDesc}>Schedule daily meal notifications</Text>
+        {Platform.OS !== "web" && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Meal Reminders</Text>
+            <View style={styles.card}>
+              <View style={styles.toggleRow}>
+                <View>
+                  <Text style={styles.toggleLabel}>Enable Reminders</Text>
+                  <Text style={styles.toggleDesc}>Schedule daily meal notifications</Text>
+                </View>
+                <Switch
+                  value={prefs.notificationsEnabled}
+                  onValueChange={handleMasterToggle}
+                  trackColor={{ false: "#6B6B6B", true: C.success }}
+                  thumbColor={prefs.notificationsEnabled ? "#fff" : "#9E9E9E"}
+                />
               </View>
-              <Switch
-                value={prefs.notificationsEnabled}
-                onValueChange={handleMasterToggle}
-                trackColor={{ false: "#6B6B6B", true: C.success }}
-                thumbColor={prefs.notificationsEnabled ? "#fff" : "#9E9E9E"}
-              />
+              {prefs.notificationsEnabled && (
+                <>
+                  <View style={styles.divider} />
+                  <Text style={styles.reminderNote}>Tap the time to adjust each reminder. Tap AM/PM to switch.</Text>
+                  {(Object.keys(prefs.mealReminderTimes) as Array<keyof MealReminderTimes>).map((key) => (
+                    <MealReminderRow key={key} mealKey={key} slot={prefs.mealReminderTimes[key]} onChange={(slot) => updateReminder(key, slot)} />
+                  ))}
+                </>
+              )}
             </View>
-            {prefs.notificationsEnabled && (
-              <>
-                <View style={styles.divider} />
-                <Text style={styles.reminderNote}>Tap the time to adjust each reminder. Tap AM/PM to switch.</Text>
-                {(Object.keys(prefs.mealReminderTimes) as Array<keyof MealReminderTimes>).map((key) => (
-                  <MealReminderRow key={key} mealKey={key} slot={prefs.mealReminderTimes[key]} onChange={(slot) => updateReminder(key, slot)} />
-                ))}
-              </>
-            )}
           </View>
-        </View>
+        )}
 
         {devMode && (
           <View style={styles.section}>

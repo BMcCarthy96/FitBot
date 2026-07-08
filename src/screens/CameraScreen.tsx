@@ -31,6 +31,18 @@ async function compressForUpload(uri: string): Promise<{ uri: string; base64: st
   return { uri: result.uri, base64: result.base64! };
 }
 
+async function compressOrFallback(
+  uri: string,
+  fallbackBase64: string | undefined,
+): Promise<{ uri: string; base64: string }> {
+  try {
+    return await compressForUpload(uri);
+  } catch (e) {
+    if (Platform.OS === "web" && fallbackBase64) return { uri, base64: fallbackBase64 };
+    throw e;
+  }
+}
+
 export default function CameraScreen() {
   const navigation = useNavigation<Nav>();
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -64,9 +76,13 @@ export default function CameraScreen() {
       Alert.alert("Gallery access required", "Please grant photo library permission in Settings.");
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, quality: 1 });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      base64: Platform.OS === "web",
+    });
     if (!result.canceled && result.assets[0]) {
-      const compressed = await compressForUpload(result.assets[0].uri);
+      const compressed = await compressOrFallback(result.assets[0].uri, result.assets[0].base64 ?? undefined);
       setImageUri(compressed.uri);
       setImageBase64(compressed.base64);
     }
@@ -116,13 +132,15 @@ export default function CameraScreen() {
           {/* Bottom controls */}
           <View style={s.bottomControls}>
             <View style={s.pickerRow}>
-              <TouchableOpacity style={s.pickerBtn} onPress={pickFromCamera} activeOpacity={0.75}>
-                <Ionicons name="camera" size={24} color={C.primary} />
-                <Text style={s.pickerLabel}>Camera</Text>
-              </TouchableOpacity>
+              {Platform.OS !== "web" && (
+                <TouchableOpacity style={s.pickerBtn} onPress={pickFromCamera} activeOpacity={0.75}>
+                  <Ionicons name="camera" size={24} color={C.primary} />
+                  <Text style={s.pickerLabel}>Camera</Text>
+                </TouchableOpacity>
+              )}
               <TouchableOpacity style={s.pickerBtn} onPress={pickFromLibrary} activeOpacity={0.75}>
                 <Ionicons name="images" size={24} color={C.primary} />
-                <Text style={s.pickerLabel}>Gallery</Text>
+                <Text style={s.pickerLabel}>{Platform.OS === "web" ? "Upload" : "Gallery"}</Text>
               </TouchableOpacity>
               {imageUri && (
                 <TouchableOpacity style={s.pickerBtn} onPress={() => { setImageUri(null); setImageBase64(null); }} activeOpacity={0.75}>
