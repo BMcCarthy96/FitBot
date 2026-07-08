@@ -1,5 +1,7 @@
 # FitBot: AI Food Tracker
 
+**[Live Demo →](https://fit-bot-eight.vercel.app/)** — try it in your browser, no install needed.
+
 A React Native / Expo mobile app that uses Claude's vision API to analyze meals from photos, track nutrition, and provide personalized health coaching.
 
 ## Screenshots
@@ -10,7 +12,7 @@ A React Native / Expo mobile app that uses Claude's vision API to analyze meals 
 
 ![App walkthrough](docs/demo.gif)
 
-Onboarding, home dashboard, and progress screens running on Expo Web. The photo-to-analysis flow itself needs a device camera and a live Claude API key, so this walkthrough shows the surrounding product: goal setup, daily tracking, meal history, macro rings, weight trend, the nutrition coach, and theming.
+Onboarding, home dashboard, and progress screens running on Expo Web. The [live demo](https://fit-bot-eight.vercel.app/) runs the full product, including real AI photo analysis and coaching, through a serverless proxy so no API key ships to the browser — upload a food photo instead of using the camera, since browsers can't access it the way a native app can.
 
 ## Features
 
@@ -88,7 +90,9 @@ The system prompt is cached with `cache_control: { type: "ephemeral" }` to reduc
 
 ## Production Notes
 
-`EXPO_PUBLIC_ANTHROPIC_API_KEY` embeds the key in the client bundle. That's acceptable for a personal demo, not for distribution. The production path is proxying Claude calls through a small authenticated backend so the key never ships to devices; this is the top item on the roadmap.
+The native app (Expo Go) reads `EXPO_PUBLIC_ANTHROPIC_API_KEY` directly, which embeds the key in that build. That's acceptable for personal/local use, not for distribution.
+
+The [web deploy](https://fit-bot-eight.vercel.app/) does not do this: `src/services/claude.web.ts` calls Vercel serverless functions (`api/analyze.ts`, `api/chat.ts`) that hold the key server-side behind per-IP rate limiting, so the key never ships to the browser. Metro resolves `.web.ts` files automatically, so this split is enforced at the bundler level, not just by convention.
 
 ## Known Issues
 
