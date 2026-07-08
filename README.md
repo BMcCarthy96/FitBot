@@ -94,10 +94,6 @@ The native app (Expo Go) reads `EXPO_PUBLIC_ANTHROPIC_API_KEY` directly, which e
 
 The [web deploy](https://fit-bot-eight.vercel.app/) does not do this: `src/services/claude.web.ts` calls Vercel serverless functions (`api/analyze.ts`, `api/chat.ts`) that hold the key server-side behind per-IP rate limiting, so the key never ships to the browser. Metro resolves `.web.ts` files automatically, so this split is enforced at the bundler level, not just by convention.
 
-## Known Issues
-
-- On Expo Web, switching bottom tabs can briefly render the previous screen's content behind the new one before the old screen unmounts (visible on `Coach` and `Settings`). Not observed on native; likely a screen-container background/z-index gap in the web renderer that needs `overflow: hidden` or an explicit background color per tab screen.
-
 ## License
 
 MIT. See [LICENSE](LICENSE).

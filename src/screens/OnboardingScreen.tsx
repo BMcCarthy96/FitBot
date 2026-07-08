@@ -317,6 +317,16 @@ export default function OnboardingScreen() {
   const fbAppId = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID ?? "unconfigured";
   const [, fbResponse, fbPromptAsync] = Facebook.useAuthRequest({ clientId: fbAppId });
 
+  async function startGuestSession(name = "") {
+    await AsyncStorage.multiRemove(["food_entries", "weight_entries", "user_preferences"]);
+    await savePreferences({
+      isAuthenticated: true,
+      name,
+      onboarding: { completed: true, fitnessGoal: "maintain", gender: "male", age: 30, heightCm: 170, weightKg: 70, activityLevel: "moderate", celebrityProfile: null },
+    });
+    navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
+  }
+
   async function handleGoogleSignIn() {
     if (!process.env.EXPO_PUBLIC_GOOGLE_CLIENT_ID) {
       Alert.alert("Not configured", "Add EXPO_PUBLIC_GOOGLE_CLIENT_ID to your .env file.");
@@ -653,6 +663,11 @@ export default function OnboardingScreen() {
             <Text style={intro.ctaText}>Get Started</Text>
             <Ionicons name="arrow-forward" size={18} color="#fff" />
           </TouchableOpacity>
+          {Platform.OS === "web" && (
+            <TouchableOpacity style={intro.demoBtn} onPress={() => void startGuestSession("Guest")} activeOpacity={0.8}>
+              <Text style={intro.demoBtnText}>Try the demo — no sign-up needed</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </SafeAreaView>
     );
@@ -747,14 +762,7 @@ export default function OnboardingScreen() {
               {socialButtons}
               <TouchableOpacity
                 style={lg.newHereBtn}
-                onPress={async () => {
-                  await AsyncStorage.multiRemove(["food_entries", "weight_entries", "user_preferences"]);
-                  await savePreferences({
-                    isAuthenticated: true,
-                    onboarding: { completed: true, fitnessGoal: "maintain", gender: "male", age: 30, heightCm: 170, weightKg: 70, activityLevel: "moderate", celebrityProfile: null },
-                  });
-                  navigation.reset({ index: 0, routes: [{ name: "MainTabs" }] });
-                }}
+                onPress={() => void startGuestSession()}
                 activeOpacity={0.8}
               >
                 <Text style={lg.newHereText}>No password? <Text style={lg.newHereLink}>Continue without signing in</Text></Text>
@@ -1444,6 +1452,8 @@ const intro = StyleSheet.create({
     elevation: 10,
   },
   ctaText: { fontFamily: F.extrabold, color: "#fff", fontSize: 17 },
+  demoBtn: { alignItems: "center", justifyContent: "center", paddingVertical: 14, marginTop: 4 },
+  demoBtnText: { fontFamily: F.bold, color: C.primary, fontSize: 14 },
 });
 
 const lg = StyleSheet.create({
